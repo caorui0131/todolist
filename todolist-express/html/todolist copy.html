@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ToDoList—最简单的待办事项列表</title>
+    <meta name="description" content="ToDoList无须注册即可使用，数据存储在用户浏览器的html5本地数据库里，是最简单最安全的待办事项列表应用！">
+    <link rel="stylesheet" href="todolist.css">
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0 20px;
+            line-height: 1;
+        }
+        a {
+            text-decoration-line: none;
+            cursor: pointer;
+        }
+        table {
+            border: 1px solid #ccc;
+        }
+        table th {
+            text-align: left;
+            background-color: #f1f1f1;
+        } 
+        table td:nth-child(1) {
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <section>
+            <form action="javascript:postaction()" id="form">
+                <label for="title">ToDoList</label>
+					<input type="text" id="title" name="title" placeholder="添加ToDo" required="required" autocomplete="off" />
+            </form>
+        </section>
+    </header>
+    <section>
+        <h2>
+            正在进行<span id="todocount"></span>
+        </h2>
+        <ol id="todolist" class="demo-box">
+            <!-- <li draggable="true">
+                <input type="checkbox" >
+                <p id="p-3" onclick="edit()"></p>
+                <a  href="javascript:remove()"></a>
+            </li> -->
+        </ol>
+        <h2>
+            已经完成<span id="donecount"></span>
+        </h2>
+        <ul id="donelist"></ul>
+            <!-- <li draggable="true">
+                <input type="checkbox"  checked="checked">
+                <p id="p-0" onclick="edit()"></p>
+                <a  href="javascript:remove()">-</a>
+            </li> -->
+        </ul>
+    </section>
+    <!-- <button id="btn1">获取数据</button>
+    <div id="data1">there</div> -->
+    <!-- <input type='text' value='1'>2</input> -->
+    <footer></footer>
+
+    
+    <script type="text/javascript">
+    $(document).ready(function(){
+        // //前端通过click事件告诉 浏览器向后端发送ajax的get请求
+        // $("#btn1").click(function(){
+        //     $.get("http://127.0.0.1:8080/api/todo/list",function(data){
+        //         alert(data.data[0]);
+        //     })
+        // })
+
+        // //前端过click事件告诉 浏览器向后端发送ajax的post请求
+        // $("#btn1").click(function(){
+        //     $.post("http://127.0.0.1:8080/api/todo/list",{name:111},function(data){
+        //         alert("datares:"+data)
+        //         // $("#data1").html(data)
+        //         $("#data1").text(data)
+        //     })
+        // })
+
+        //前端刷新页面告诉浏览器 向后端发送ajax的get请求，把值展示在li中
+        $.get("http://127.0.0.1:8080/api/todo/list2",function(data){
+            // console.log(data[0].title);   为什么打印不出来？
+            // alert(data[0].title);
+            for(i=0;i<data.length;i++){
+                var dataid=data[i].id;
+                var isChecked=data[i].checked;
+                // console.log(dataid);
+                var $iptVal=data[i].title;
+                if(isChecked==0){
+                    // var $li=$('<li raggable="true" ><input id="ipt'+count+'<p id="p-3" onclick="edit()"></p><a href="javascript:remove()"></a> </li>')
+                    var $li=$('<li class="li" data-id="'+dataid+'"><input class="checkbox" type="checkbox" ></input> <p class="p">'
+                        + $iptVal 
+                        + '</p><a class="delbtn"></a></li>')
+                    $('#todolist').append($li);
+                    // console.log($li);
+                }else{
+                    var $li=$('<li class="li" data-id="'+dataid+'"><input class="checkbox" type="checkbox"  checked></input> <p class="p">'
+                        + $iptVal 
+                        + '</p><a class="delbtn"></a></li>')
+                    $('#donelist').append($li);
+                }
+               
+                //绑定删除方法
+                $li.on('click','.delbtn',delNodes)
+                //绑定勾选切换
+                $li.on('click','.checkbox',changeList)
+                todocount();
+                donecount();
+                //绑定编辑方法
+                $li.on('click','.p',editNodes)
+            }
+             
+            
+        })
+
+
+        // 添加操作
+        $("#title").keydown(function(e){
+            console.log(e)
+            var e = e || window.event;
+            //如果按下的是回车键
+            if(e.keyCode=="13" && $("#title").val().length>0){
+                // alert("2");
+                e.preventDefault();
+                const iptVal=$("#title").val();
+                const data={iptVal}
+                //前端通过click事件告诉 浏览器向后端发送ajax的post请求
+                $.post("http://127.0.0.1:8080/api/todo/list",data,function(data){
+                    alert(data);
+
+                })
+                createNodes();
+            }
+
+        })
+        
+        //添加方法 draggable="true"
+        function createNodes(){
+            var $iptVal=$("#title").val();
+            // var $li=$('<li raggable="true" ><input id="ipt'+count+'<p id="p-3" onclick="edit()"></p><a href="javascript:remove()"></a> </li>')
+            var $li=$('<li class="li"><input class="checkbox" type="checkbox" ></input> <p class="p">' + $iptVal + '</p><a class="delbtn"></a></li>')
+            $('#todolist').append($li);
+            $("#title").val("");
+            //绑定删除方法
+            $li.on('click','.delbtn',delNodes)
+            //绑定勾选切换
+            $li.on('click','.checkbox',changeList)
+            todocount();
+            donecount();
+            //绑定编辑方法
+            $li.on('click','.p',editNodes)
+        }
+        //拖拽排序
+        $('#todolist,#donelist').sortable({
+                display:2,
+                opacity:0.35
+        })
+
+        //删除方法
+        function delNodes(){
+            // console.log("1") 
+            // alert("1")
+            $(this).parent().remove();
+            todocount();
+            donecount();
+            // 前端通过click事件告诉 浏览器向后端发送ajax的post请求
+            // alert($(this).parent().attr('data-id'));
+            const id=$(this).parent().attr('data-id');
+            var data={id};
+            $.post("http://127.0.0.1:8080/api/todo/list2",data,function(data){
+                    alert(data);
+            })
+        }
+ 
+        //勾选切换
+        function changeList(e){
+            var $li=$(this).parent(".li");   //不可用$(".li"),会clone所有li
+            var $cloneLi=$li.clone(true);
+            const id=$(this).parent().attr('data-id');
+            var data={id};
+            if(e.target.checked){
+                // 勾选切换存入数据库中
+                // 点击多选框，触发post请求 改变 checked为1
+                // 刷新页面，读取数据库中的值
+                // alert(1);
+                $.post("http://127.0.0.1:8080/api/todo/list3",data,function(data){
+                    alert(data);
+                })
+                $("#donelist").append($cloneLi);
+            }else{
+                $.post("http://127.0.0.1:8080/api/todo/list4",data,function(data){
+                    alert(data);
+                })
+                $("#todolist").append($cloneLi);
+            }
+            $(this).parent().remove();
+            todocount();
+            donecount();
+           
+        }
+        // 查看数据库中checked
+        // $.get("http://127.0.0.1:8080/api/todo/list3",function(data){
+        //     for(i=0;i<data.length;i++){
+        //         var checked=data[i].checked;
+        //         var id=data[i].id;
+        //         // const id=$(this).parent().attr('data-id');
+        //         // console.log(checked)  ???
+        //         // alert(id,checked) ???
+        //         var $li=$(this).parent(".li");   //不可用$(".li"),会clone所有li
+        //         var $cloneLi=$li.clone(true);
+        //         if(checked==0){
+        //             $("li input[data-id='"+id+"']").attr("checked",false);
+        //             // $("#donelist").append($cloneLi);
+        //             // $(this).parent().remove();
+        //         }else{
+        //             $("li input[type='checkbox']").attr("checked",true);
+        //             // $("#todolist").append($cloneLi);
+        //             // $(this).parent().remove();
+        //         }
+        //     }
+            
+        // })
+
+        //编辑方法
+        function editNodes(){
+            // alert("2");
+            // 点击input变成可编辑状态
+                // 获取class为.p的文本元素，将其html改为input
+                // $(this).attr("disabled",false)
+                $(".action").blur();
+                var p=$(this);
+                var txt=p.text();
+                var input="<input class='action' type='text' value='" + txt + "'/>" 
+                // alert(input)ç
+                p.html(input);
+                var v = $(".action").val()
+                $(".action").val("").focus().val(v);
+                // $(".action").click(function(){
+                //     // $("li").children(input[type='text']).attr("disabled",true);
+                //     // $(this).removeAttr("disabled"); 
+                //     return false; //阻止默认行为 （冒泡）
+                    
+                // });
+                // 获取焦点
+                // $(".action").focus(function(){
+                //     $(this).val(txt);
+                //     // $("li").children(input[type='text']).attr("disabled",true);
+                //     // $(this).removeAttr("disabled"); 
+                // });
+                // 失去焦点
+                $(".action").blur(function(){
+                    var newtxt=$(this).val();
+                    // 判断文本是否修改
+                    if(newtxt!=txt){
+                        const id=$(this).parent().parent().attr('data-id');
+                        // var data={id};
+                        p.html(newtxt);
+                        const data={"id":id,"iptVal":newtxt}
+                        console.log(data)
+                        $.post("http://127.0.0.1:8080/api/todo/editlist",data,function(data){
+                            alert(data);
+                        })
+                    }else{
+                        p.html(txt);
+                    }
+                    
+                });
+                // $("input").click(alert(1))
+                // 文本框失去焦点后提交内容，重新改变为文本
+                // $("input").blur(function(){
+                //     var newtxt=$(this).text();
+                //     // 判断文本是否修改
+                //     if(newtxt!=txt){
+                //         p.html(newtxt);
+                //     }else{
+                //         p.html(txt);
+                //     }
+                // });
+                // alert(p.html(input))
+            
+            // 点击文本框外还原不可编辑状态
+
+            // 点击文本框外post数据到DB
+            
+            
+        }
+
+        //计数
+        function todocount(){
+            var $todocount=$("#todolist li").length;
+            $("#todocount").text($todocount);
+        }
+        function donecount(){
+            var $donecount=$("#donelist li").length;
+            $("#donecount").text($donecount);
+        }
+
+        function getCookie(name){
+            var strcookie = document.cookie;//获取cookie字符串
+            var arrcookie = strcookie.split("; ");//分割
+            //遍历匹配
+            for ( var i = 0; i < arrcookie.length; i++) {
+                var arr = arrcookie[i].split("=");
+                if (arr[0] == name){
+                    return arr[1];
+                }
+            }
+            return "";
+        }
+
+        function setCookie(cname, cvalue) {
+            document.cookie = cname + "=" + cvalue + ";";
+        } 
+        // nodejs
+
+        // if ($(this).prop("checked")) {
+        //     alert("选中");
+        // } else {
+        //     alert("没有选中");
+        // }
+        // $(".delbtn").click(function(){
+        //     alert("2");
+        //     $(this).remove();
+        // })
+
+        // // 发送 get 请求 //?
+        // function get(url) {
+        //     return $.get(url)
+        // }
+
+        // // 发送 post 请求
+        // function post(url, data = {}) {
+        //     return $.ajax({
+        //         type: 'post',
+        //         url,
+        //         data: JSON.stringify(data),
+        //         contentType: "application/json",
+        //     })
+        // }
+        // $('#btnLogin').click(() => {
+        //     const username = $('#textUsername').val()
+        //     const password = $('#textPassword').val()
+        //     const url = '/api/user/login'
+        //     const data = {
+        //         username,
+        //         password
+        //     }
+        //     post(url, data).then(res => {
+        //         if (res.errno === 0) {
+        //             // 登录成功
+        //             location.href = './admin.html'
+        //         } else {
+        //             // 登录失败
+        //             alert(res.message)
+        //         }
+        //     })
+        // })
+    });
+    </script>
+</body>
+</html>
