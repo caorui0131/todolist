@@ -117,8 +117,15 @@
             $('.loginhide').hide();
         })
         $(".logoutbtn").click(function(){
-            deleteCookie('name');
-            location.reload();
+            //deleteCookie('name');
+            $.post("http://127.0.0.1:8080/api/todo/logout",function(){
+                // app.js验证是否为登录状态中间件
+                if(data=="没有登录信息"){
+                    login();
+                    return;
+                }
+                location.reload();
+            })
         })
         // 隐藏loginusername
         $(".loginhide").hide();
@@ -130,91 +137,159 @@
         // setCookie("name3","value3")
         // console.log("document.cookie:",document.cookie)
         // getCookie("name");
-        // 判断是否登录
-        function islogin(){
-            // console.log("document.cookie.length2:",document.cookie.length)
-            if(document.cookie.length>0){
-                // 首次判断登录成功
-                console.log("name:",getCookie("name"));
+
+        // 判断是否登录-前端setcookie
+        // function islogin(){
+        //     // console.log("document.cookie.length2:",document.cookie.length)
+        //     if(document.cookie.length>0){
+        //         // 首次判断登录成功
+        //         console.log("name:",getCookie("name"));
+        //         $(".logindiv").hide();
+        //         $(".login").hide();
+        //         $(".loginusername").text(getCookie("name")).show();
+        //         console.log('getCookie("name")1:',getCookie("name"))
+        //         $.get("http://127.0.0.1:8080/api/todo/loginlist",function(data){
+        //             if(data=="没有登录信息"){
+        //                 alert("请登录");
+        //                 return;
+        //             }
+        //             console.log("init data:",data)
+        //             for(i=0;i<data.length;i++){
+        //                 var iptVal=data[i].title
+        //                 console.log("iptVal:"+iptVal)
+        //                 var dataid=data[i].id;
+        //                 var isChecked=data[i].checked;
+        //                 // console.log(dataid);
+        //                 // var iptVal=data[i].title;
+        //                 if(isChecked==0){
+        //                     // var $li=$('<li raggable="true" ><input id="ipt'+count+'<p id="p-3" onclick="edit()"></p><a href="javascript:remove()"></a> </li>')
+        //                     var $li=$('<li class="li" data-id="'+dataid+'"><input class="checkbox" type="checkbox" ></input> <p class="p">'
+        //                         + iptVal 
+        //                         + '</p><a class="delbtn"></a></li>')
+        //                     $('#todolist').append($li);
+        //                     // console.log($li);
+        //                 }else{
+        //                     var $li=$('<li class="li" data-id="'+dataid+'"><input class="checkbox" type="checkbox"  checked></input> <p class="p">'
+        //                         + iptVal 
+        //                         + '</p><a class="delbtn"></a></li>')
+        //                     $('#donelist').append($li);
+        //                 }
+                    
+        //                 //绑定删除方法
+        //                 $li.on('click','.delbtn',delNodes)
+        //                 //绑定勾选切换
+        //                 $li.on('click','.checkbox',changeList)
+        //                 todocount();
+        //                 donecount();
+        //                 //绑定编辑方法
+        //                 $li.on('click','.p',editNodes)
+        //             }
+        //         })
+        //     }else{
+        //         // 弹出登录框
+        //         $(".logindiv").show();
+        //         $(".login").show();
+        //         $(".loginusername").hide();
+        //         $(".loginbtn").click(function(){
+        //             var username=$(".username").val();
+        //             var password=$(".password").val();
+        //             data={username,password}
+        //             // console.log("data:"+data)
+        //             $.post("http://127.0.0.1:8080/api/todo/login",data,function(data){
+        //                 console.log("data5:",data)
+        //                 if(data){
+        //                     console.log("data.username4:"+data.username)
+        //                     // 登陆成功
+        //                     $(".logindiv").hide();
+        //                     $(".login").hide();
+        //                     $(".loginusername").text(getCookie("name")).show();
+        //                     console.log("data.111:"+getCookie("name"))
+        //                     // setCookie("name",data.username,1)
+        //                     islogin();
+        //                 }else{
+        //                     alert("登陆失败,请重新登录")
+        //                 }
+        //             })
+        //         })
+        //     }
+        // }
+        //islogin();
+        
+        init();
+        //首次判断是否登录-后端setcookie
+        function init(){
+            $.get("http://127.0.0.1:8080/api/todo/loginlist",function(data){
+                // app.js验证是否为登录状态中间件
+                if(data=="没有登录信息"){
+                    login();
+                    return;
+                }
                 $(".logindiv").hide();
                 $(".login").hide();
-                $(".loginusername").text(getCookie("name")).show();
-                console.log('getCookie("name")1:',getCookie("name"))
-                username=getCookie("name");
-                data={username}
-                $.get("http://127.0.0.1:8080/api/todo/loginlist",data,function(data){
-                    console.log("init data:",data)
-                    for(i=0;i<data.length;i++){
-                        var iptVal=data[i].title
-                        console.log("iptVal:"+iptVal)
-                        var dataid=data[i].id;
-                        var isChecked=data[i].checked;
-                        // console.log(dataid);
-                        // var iptVal=data[i].title;
-                        if(isChecked==0){
-                            // var $li=$('<li raggable="true" ><input id="ipt'+count+'<p id="p-3" onclick="edit()"></p><a href="javascript:remove()"></a> </li>')
-                            var $li=$('<li class="li" data-id="'+dataid+'"><input class="checkbox" type="checkbox" ></input> <p class="p">'
-                                + iptVal 
-                                + '</p><a class="delbtn"></a></li>')
-                            $('#todolist').append($li);
-                            // console.log($li);
-                        }else{
-                            var $li=$('<li class="li" data-id="'+dataid+'"><input class="checkbox" type="checkbox"  checked></input> <p class="p">'
-                                + iptVal 
-                                + '</p><a class="delbtn"></a></li>')
-                            $('#donelist').append($li);
-                        }
-                    
-                        //绑定删除方法
-                        $li.on('click','.delbtn',delNodes)
-                        //绑定勾选切换
-                        $li.on('click','.checkbox',changeList)
-                        todocount();
-                        donecount();
-                        //绑定编辑方法
-                        $li.on('click','.p',editNodes)
+                $(".loginusername").text(getCookie("name2")).show();
+                console.log("init data:",data)
+                initTodoList(data);
+            })
+        }
+        // 默认首次未登录，进入登录流程
+        function login(){
+            // 弹出登录框
+            $(".logindiv").show();
+            $(".login").show();
+            $(".loginusername").hide();
+            $(".loginbtn").click(function(){
+                var username=$(".username").val();
+                var password=$(".password").val();
+                data={username,password}
+                // console.log("data:"+data)
+                $.post("http://127.0.0.1:8080/api/todo/login",data,function(data){
+                    // app.js验证是否为登录状态中间件
+                    if(data=="没有登录信息"){
+                        login();
+                        return;
+                    }
+                    console.log("data5:",data)
+                    if(data){
+                        console.log("data.username4:"+data.username)
+                        // 登陆成功
+                        $(".logindiv").hide();
+                        $(".login").hide();
+                        $(".loginusername").text(getCookie("name2")).show();
+                        console.log("data.111:"+getCookie("name"))
+
+                        // setCookie("name",data.username,1)
+                        //islogin();
+                        init();
+                    }else{
+                        alert("登陆失败,请重新登录")
                     }
                 })
-            }else{
-                // 首次判断登录失败
-                // alert("首次判断登录失败");
-                // 弹出登录框
-                $(".logindiv").show();
-                $(".login").show();
-                $(".loginusername").hide();
-                $(".loginbtn").click(function(){
-                    var username=$(".username").val();
-                    var password=$(".password").val();
-                    data={username,password}
-                    // console.log("data:"+data)
-                    $.post("http://127.0.0.1:8080/api/todo/login",data,function(data){
-                        console.log("data5:",data)
-                        if(data){
-                            console.log("data.username4:"+data.username)
-                            // 登陆成功
-                            $(".logindiv").hide();
-                            $(".login").hide();
-                            $(".loginusername").text(getCookie("name")).show();
-                            console.log("data.111:"+getCookie("name"))
-                            setCookie("name",data.username,1)
-                            islogin();
-                        }else{
-                            alert("登陆失败,请重新登录")
-                        }
-                        // if(data[0].username.length>0){
-                        //     // 登陆成功
-                        //     setCookie(data[0].username,"value1")
-                        //     islogin();
-                        //     loginout();
-                        // }else{
-                        //     // 登陆失败
-                        //     alert("登陆失败,请重新登录")
-                        // }
-                    })
-                })
-            }
+            })
         }
-        islogin();
+
+        function initTodoList(todoArry){
+            for(i=0;i<todoArry.length;i++){
+                var isChecked=todoArry[i].checked;
+                var $li=$('<li class="li" data-id="'+todoArry[i].id+'">'
+                        +'<input class="checkbox" type="checkbox"'+(isChecked==1?'checked':'')+' >'
+                        +'</input> <p class="p">'
+                        + todoArry[i].title 
+                        + '</p><a class="delbtn"></a></li>')
+                if(isChecked==0){//0为未选中，1为选中
+                    $('#todolist').append($li);
+                }else{
+                    $('#donelist').append($li);
+                }
+                todocount();
+                donecount();
+            }
+            //绑定删除方法
+            $(".li").on('click','.delbtn',delNodes)
+            //绑定勾选切换
+            $(".li").on('click','.checkbox',changeList)
+            //绑定编辑方法
+            $(".li").on('click','.p',editNodes)
+        }
 
         // post请求
         // //前端通过click事件告诉 浏览器向后端发送ajax的get请求
@@ -279,6 +354,11 @@
                 const data={iptVal}
                 //前端通过click事件告诉 浏览器向后端发送ajax的post请求
                 $.post("http://127.0.0.1:8080/api/todo/list",data,function(data){
+                    // app.js验证是否为登录状态中间件
+                    if(data=="没有登录信息"){
+                        login();
+                        return;
+                    }
                     // alert(data);
                     // console.log("data111:",data);
                 })
@@ -322,7 +402,12 @@
             var data={id};
             console.log(data);
             $.post("http://127.0.0.1:8080/api/todo/dellist",data,function(data){
-                    alert(data);
+                // app.js验证是否为登录状态中间件
+                if(data=="没有登录信息"){
+                    login();
+                    return;
+                }
+                alert(data);
             })
         }
  
@@ -338,11 +423,21 @@
                 // 刷新页面，读取数据库中的值
                 // alert(1);
                 $.post("http://127.0.0.1:8080/api/todo/checked",data,function(data){
+                    // app.js验证是否为登录状态中间件
+                    if(data=="没有登录信息"){
+                        login();
+                        return;
+                    }
                     alert(data);
                 })
                 $("#donelist").append($cloneLi);
             }else{
                 $.post("http://127.0.0.1:8080/api/todo/list4",data,function(data){
+                        // app.js验证是否为登录状态中间件
+                    if(data=="没有登录信息"){
+                        login();
+                        return;
+                    }
                     alert(data);
                 })
                 $("#todolist").append($cloneLi);
@@ -412,6 +507,11 @@
                         const data={"id":id,"iptVal":newtxt}
                         // console.log(data)
                         $.post("http://127.0.0.1:8080/api/todo/editlist",data,function(data){
+                            // app.js验证是否为登录状态中间件
+                            if(data=="没有登录信息"){
+                                login();
+                                return;
+                            }
                             alert(data);
                         })
                     }else{

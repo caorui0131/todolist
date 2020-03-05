@@ -91,6 +91,7 @@ router.post("/editlist",function(req, res, next){
 // 根据登录的username查询对应的list
 router.get("/loginlist",function(req, res, next){
   // var username=req.query.username
+  // 取前端改不了的cookie的username查询用户列表
   var username=req.cookies.name;
   console.log("req.query:",req.query)
   console.log("username:",username)
@@ -98,26 +99,6 @@ router.get("/loginlist",function(req, res, next){
   where author='${username}';`,function(err,result){
     // console.log(result)
     res.json(result)
-  })
-})
-// 检查登录信息
-router.post("/login",function(req, res, next){
-  var username=req.body.username
-  var password=req.body.password
-  console.log("username:",username)
-  con.query(`select username,password from user where username='${username}'and password='${password}';`,function(err,result){
-    console.log("result:",result)
-    if(result&&result.length>0){
-      // res.setHeader('Set-Cookie',`name=${username};path=/;httpOnly;`)
-      // response.addHeader("Set-Cookie", `name=${username}; Path=/; HttpOnly`);
-      // res.cookie('name',username,{path:'/',expires: new Date(Date.now()+900000),httpOnly:true})
-      console.log('setHeader')
-      res.json(result[0])
-      console.log('result[0]:',result[0])
-    }else{
-      res.json(null);
-    }
-    
   })
 })
 // select title,checked,username,`password`,realname from todolists,user where todolists.author=user.username
